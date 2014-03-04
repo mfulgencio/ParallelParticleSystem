@@ -1,0 +1,11 @@
+CPE 419 - Parallelized Particle Collision Detection
+Tim Adam
+Michael Fulgencio
+Adin Miller
+
+Based on CPE 476, Lab 1, Tim Adam & Nick Alereza
+
+
+compile: 'make'
+run: 'make run'
+  or './test'
