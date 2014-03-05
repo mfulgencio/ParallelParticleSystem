@@ -9,3 +9,15 @@ Based on CPE 476, Lab 1, Tim Adam & Nick Alereza
 compile: 'make'
 run: 'make run'
   or './run'
+
+command line args:
+-n <int> 	  number of particles to start with (200 default)
+-speed <float>	  how fast the simulation should run (1x default)
+-size <float>	  the size of the particles (0.05 default)
+-random <float>   the size of the box wherein the particles start
+                  (0.5 default)
+-bounce <float>	  how bouncy the particles are (0.8 default)
+                  -> the more bounce, the faster the particles 
+                     reflect off the model
+-model <string>	  which model to use (path to .m or .obj file)
+
