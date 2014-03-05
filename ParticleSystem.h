@@ -13,8 +13,8 @@
 
 typedef struct 
 {
-  SVector3* offset;
-  SVector3* velocity;
+  SSphere sphere;
+  SVector3 velocity;
 } Particle;
 
 class ParticleSystem {
@@ -29,7 +29,7 @@ public:
    int numParticles;
    Particle particles[MAX_PARTICLES];
 
-   ParticleSystem(SVector3* pos, float random, CMesh * mod, float size);
+   ParticleSystem(SVector3 pos, float random, CMesh * mod, float size);
    ~ParticleSystem();
    void update(float dt);
    void draw();

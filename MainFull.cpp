@@ -159,7 +159,7 @@ int main(int argc, char * argv[])
   float size = 1.0;
 
 	player = new Player(new SVector3(0,0,0), NULL, size, "Models/gargoyle_2k.m");
-  psys = new ParticleSystem(new SVector3(0,2,0), 0.5f, NULL, 0.05f);
+  psys = new ParticleSystem(SVector3(0,2,0), 0.5f, NULL, 0.05f);
 	camera = new Camera(0, 0, -3, player);
   manager = new InputManager(player, camera, psys);
 	hud = new HUD();

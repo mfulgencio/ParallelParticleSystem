@@ -13,19 +13,17 @@
 #include <stdlib.h>
 
 
-#define GRAVITY 0.008f
-#define YSPEED 0.01f
-#define SPEED 0.002f
+#define GRAVITY 0.12f
+#define YSPEED 0.20f
+#define SPEED 0.06f
 #define PARTICLE_SIZE 0.05f
 
-ParticleSystem::ParticleSystem(SVector3* pos, float random, CMesh* mod, float size) {
+ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float size) {
   this->size = size;
   this->random = random;
   this->numParticles = 200;
 
-  Translation.X = pos->X;
-  Translation.Y = pos->Y;
-  Translation.Z = pos->Z;
+  Translation = pos;
 
   Scale.X = size; 
   Scale.Y = size;
@@ -69,8 +67,8 @@ ParticleSystem::ParticleSystem(SVector3* pos, float random, CMesh* mod, float si
 
   for (int i = 0; i < MAX_PARTICLES; i++)
   {
-    particles[i].offset = new SVector3();
-    particles[i].velocity = new SVector3();
+    particles[i].sphere = SSphere(SVector3(), PARTICLE_SIZE);
+    particles[i].velocity = SVector3();
   }
   resetParticles();
 }
@@ -79,11 +77,11 @@ ParticleSystem::~ParticleSystem() { }
 
 void ParticleSystem::moveParticle(int i, float time)
 {
-   particles[i].velocity->Y -= GRAVITY * time;
+   particles[i].velocity.Y -= GRAVITY * time;
 
-   particles[i].offset->X += particles[i].velocity->X; 
-   particles[i].offset->Y += particles[i].velocity->Y; 
-   particles[i].offset->Z += particles[i].velocity->Z; 
+   particles[i].sphere.center.X += particles[i].velocity.X * time; 
+   particles[i].sphere.center.Y += particles[i].velocity.Y * time; 
+   particles[i].sphere.center.Z += particles[i].velocity.Z * time; 
 }
 
 
@@ -92,7 +90,7 @@ void ParticleSystem::update(float time)
   for (int i = 0; i < numParticles; i++)
 	{
      moveParticle(i, time);
-     if (particles[i].offset->Y < -2)
+     if (particles[i].sphere.center.Y < -2)
         resetParticle(i);
   }
 }
@@ -110,7 +108,7 @@ void ParticleSystem::draw()
 
 		glPushMatrix();
 
-		glTranslatef(particles[i].offset->X, particles[i].offset->Y, particles[i].offset->Z);
+		glTranslatef(particles[i].sphere.center.X, particles[i].sphere.center.Y, particles[i].sphere.center.Z);
 		glRotatef(Rotation.X, 1, 0, 0);
 		glRotatef(Rotation.Y, 0, 1, 0);
 		glScalef(Scale.X, Scale.Y, Scale.Z);
@@ -159,13 +157,13 @@ void ParticleSystem::resetParticles()
 
 void ParticleSystem::resetParticle(int i)
 {
-  particles[i].offset->X = Translation.X + rbFloat() * random;
-  particles[i].offset->Y = Translation.Y + rbFloat() * random;
-  particles[i].offset->Z = Translation.Z + rbFloat() * random;
+  particles[i].sphere.center.X = Translation.X + rbFloat() * random;
+  particles[i].sphere.center.Y = Translation.Y + rbFloat() * random;
+  particles[i].sphere.center.Z = Translation.Z + rbFloat() * random;
   
-  particles[i].velocity->X = rbFloat() * SPEED;
-  particles[i].velocity->Y = -rFloat() * YSPEED;
-  particles[i].velocity->Z = rbFloat() * SPEED;
+  particles[i].velocity.X = rbFloat() * SPEED;
+  particles[i].velocity.Y = -rFloat() * YSPEED;
+  particles[i].velocity.Z = rbFloat() * SPEED;
   
 }
 
@@ -175,18 +173,15 @@ void ParticleSystem::collideWith(std::vector<SSphere> spheres)
   {
     for (int j = 0; j < spheres.size(); j++)
     {
-      if (spheres[j].collidesWith(SSphere(*particles[i].offset, PARTICLE_SIZE)))
+      if (spheres[j].collidesWith(particles[i].sphere))
       {
-        //particles[i].velocity->Y *= -1;
-        float len = particles[i].velocity->length();
-        SVector3 dir = (*particles[i].offset) - spheres[j].center; 
+        float len = particles[i].velocity.length();
+        SVector3 dir = (particles[i].sphere.center) - spheres[j].center; 
         dir /= dir.length();
         dir *= len;        
 
-        particles[i].velocity->X = dir.X;
-        particles[i].velocity->Y = dir.Y;
-        particles[i].velocity->Z = dir.Z;
-        *particles[i].offset += (*particles[i].velocity) * 0.05f;
+        particles[i].velocity = dir;
+        particles[i].sphere.center += (particles[i].velocity) * 0.05f;
 
         break;
       }
