@@ -1,5 +1,12 @@
-#include <iostream>
+#ifdef __APPLE__
+#include "GLUT/glut.h"
+#include <OPENGL/gl.h>
+#endif
+#ifdef __unix__
 #include <GL/glut.h>
+#endif
+
+#include <iostream>
 
 #include <stdio.h>
 #include "ParticleSystem.h"

@@ -1,8 +1,14 @@
+#ifdef __APPLE__
+#include "GLUT/glut.h"
+#include <OPENGL/gl.h>
+#include <stdlib.h>
+#endif
+#ifdef __unix__
 #include <iostream>
 #include <GL/glut.h>
 #include <stdio.h>
 #include <time.h>
-
+#endif
 
 // Utility classes for loading shaders/meshes
 #include "CShader.h"
