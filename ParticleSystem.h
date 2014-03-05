@@ -7,6 +7,7 @@
 
 #include "CShader.h"
 #include "CMeshLoader.h"
+#include "Util/SSphere.h"
 
 #endif
 
@@ -37,5 +38,5 @@ public:
    void moveParticle(int ndx, float dt);
    void resetParticles();
    void resetParticle(int i);
-
+   void collideWith(std::vector<SSphere> spheres);
 };

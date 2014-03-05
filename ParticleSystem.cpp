@@ -9,7 +9,7 @@
 #define GRAVITY 0.008f
 #define YSPEED 0.01f
 #define SPEED 0.002f
-
+#define PARTICLE_SIZE 0.05f
 
 ParticleSystem::ParticleSystem(SVector3* pos, float random, CMesh* mod, float size) {
   this->size = size;
@@ -160,5 +160,30 @@ void ParticleSystem::resetParticle(int i)
   particles[i].velocity->Y = -rFloat() * YSPEED;
   particles[i].velocity->Z = rbFloat() * SPEED;
   
+}
+
+void ParticleSystem::collideWith(std::vector<SSphere> spheres)
+{
+  for (int i = 0; i < numParticles; i++)
+  {
+    for (int j = 0; j < spheres.size(); j++)
+    {
+      if (spheres[j].collidesWith(SSphere(*particles[i].offset, PARTICLE_SIZE)))
+      {
+        //particles[i].velocity->Y *= -1;
+        float len = particles[i].velocity->length();
+        SVector3 dir = (*particles[i].offset) - spheres[j].center; 
+        dir /= dir.length();
+        dir *= len;        
+
+        particles[i].velocity->X = dir.X;
+        particles[i].velocity->Y = dir.Y;
+        particles[i].velocity->Z = dir.Z;
+        *particles[i].offset += (*particles[i].velocity) * 0.05f;
+
+        break;
+      }
+    }
+  }
 }
 
