@@ -28,7 +28,7 @@ public:
   void centerMeshByAverage(SVector3 const & CenterLocation);
   void centerMeshByExtents(SVector3 const & CenterLocation);
   void resizeMesh(SVector3 const & Scale);
-  std::vector<SSphere*> gimmeSpheres();
+  std::vector<SSphere> gimmeSpheres();
 };
 
 #endif

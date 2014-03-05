@@ -64,7 +64,7 @@ Player::Player(SVector3* pos, CMesh* mod, float size, const char* name)
 	// And center it at the origin
 	mod->centerMeshByExtents(SVector3(0));
 
-  //this->hitspheres = model->gimmeSpheres();
+  this->hitspheres = mod->gimmeSpheres();
 
 	// Now load our mesh into a VBO, retrieving the number of triangles and the handles to each VBO
 	CMeshLoader::createVertexBufferObject(* mod, TriangleCount, 

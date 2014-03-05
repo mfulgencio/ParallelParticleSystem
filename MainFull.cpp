@@ -68,6 +68,7 @@ void update(float dtime)
 {
   player->update(dtime);
   psys->update(dtime);
+  psys->collideWith(player->hitspheres);
   manager->update();
   camera->update();
 }

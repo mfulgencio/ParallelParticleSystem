@@ -96,23 +96,16 @@ void CMesh::resizeMesh(SVector3 const & Scale)
 		it->Position *= Resize;
 }
 
-std::vector<SSphere*> CMesh::gimmeSpheres()
+std::vector<SSphere> CMesh::gimmeSpheres()
 {
-  std::vector<SSphere*> ret;
-
-  printf("here!\n");
-  if (!this->Triangles.size())
-    printf("godDAMNit\n");
-  printf("here!\n");
+  std::vector<SSphere> ret;
 
   for (std::vector<STriangle>::size_type i = 0; i < Triangles.size(); i++)
   {
-    printf("yes\n");
-    ret.push_back(new SSphere(Vertices[Triangles[i].VertexIndex1].Position, 
+    ret.push_back( SSphere(Vertices[Triangles[i].VertexIndex1].Position, 
                               Vertices[Triangles[i].VertexIndex2].Position,
                               Vertices[Triangles[i].VertexIndex3].Position));
-    printf("maybe\n");
   }
 
-  printf("here again!\n");
+  return ret;
 }

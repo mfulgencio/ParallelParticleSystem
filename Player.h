@@ -24,7 +24,7 @@ public:
    // Information about mesh
    SVector3 Translation, Rotation, Scale;
    int TriangleCount;
-   std::vector<SSphere*> hitspheres;
+   std::vector<SSphere> hitspheres;
 
    Player(SVector3* pos, CMesh * mod, float size, const char* name);
    ~Player();

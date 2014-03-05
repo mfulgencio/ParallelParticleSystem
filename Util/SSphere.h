@@ -9,8 +9,9 @@ public:
   float radius;
 
   SSphere();
+  SSphere(SVector3 c, float r);
   SSphere(SVector3 A, SVector3 B, SVector3 C);
   ~SSphere();
-  int collidesWith(SSphere* other);
+  int collidesWith(SSphere other);
 
 };

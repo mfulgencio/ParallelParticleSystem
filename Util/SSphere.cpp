@@ -16,6 +16,11 @@ SSphere::SSphere()
   center.Z = 0;
   radius = -999;
 }
+SSphere::SSphere(SVector3 c, float r)
+{
+  center = c;
+  radius = r;
+}
 
 SSphere::SSphere(SVector3 A, SVector3 B, SVector3 C)
 {
@@ -28,9 +33,9 @@ SSphere::SSphere(SVector3 A, SVector3 B, SVector3 C)
 
 SSphere::~SSphere() { }
 
-int SSphere::collidesWith(SSphere* other)
+int SSphere::collidesWith(SSphere other)
 {
-   if ((this->center - other->center).length() > this->radius + other->radius)
+   if ((this->center - other.center).length() > this->radius + other.radius)
       return 0;
    return 1;
 }

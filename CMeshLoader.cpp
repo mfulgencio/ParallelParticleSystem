@@ -7,6 +7,8 @@
 #endif
 
 #include "CMeshLoader.h"
+#include "Util/SSphere.h"
+
 
 #include <iostream>
 #include <fstream>
