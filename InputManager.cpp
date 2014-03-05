@@ -60,8 +60,7 @@ void InputManager::keyUpCallBack(unsigned char key, int x, int y) {
 void InputManager::update()
 {
    float speed = 0.1f;
-   if (a) {
-this->camera->Position.X += speed;
+   if (a) this->camera->Position.X += speed;
    if (d) this->camera->Position.X -= speed;
    if (w) this->camera->Position.Y += speed;
    if (s) this->camera->Position.Y -= speed;
