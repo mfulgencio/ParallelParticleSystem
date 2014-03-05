@@ -16,10 +16,11 @@
 #define GRAVITY 0.12f
 #define YSPEED 0.20f
 #define SPEED 0.06f
-#define PARTICLE_SIZE 0.05f
 
-ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float size) {
+ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float size, float bounce, float speed) {
   this->size = size;
+  this->bounce = bounce;
+  this->speed = speed;
   this->random = random;
   this->numParticles = 200;
 
@@ -41,7 +42,7 @@ ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float siz
 	}
 
 	// Now attempt to load the shaders
-	shade = ShaderLoader.loadShader("Shaders/GameVert2.glsl", "Shaders/Lab3_frag.glsl");
+	shade = ShaderLoader.loadShader("Shaders/GameVert1.glsl", "Shaders/Lab3_frag.glsl");
 	if (! shade)
 	{
 		std::cerr << "Unable to open or compile necessary shader." << std::endl;
@@ -67,7 +68,7 @@ ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float siz
 
   for (int i = 0; i < MAX_PARTICLES; i++)
   {
-    particles[i].sphere = SSphere(SVector3(), PARTICLE_SIZE);
+    particles[i].sphere = SSphere(SVector3(), this->size);
     particles[i].velocity = SVector3();
   }
   resetParticles();
@@ -79,9 +80,9 @@ void ParticleSystem::moveParticle(int i, float time)
 {
    particles[i].velocity.Y -= GRAVITY * time;
 
-   particles[i].sphere.center.X += particles[i].velocity.X * time; 
-   particles[i].sphere.center.Y += particles[i].velocity.Y * time; 
-   particles[i].sphere.center.Z += particles[i].velocity.Z * time; 
+   particles[i].sphere.center.X += particles[i].velocity.X * time * this->speed; 
+   particles[i].sphere.center.Y += particles[i].velocity.Y * time * this->speed; 
+   particles[i].sphere.center.Z += particles[i].velocity.Z * time * this->speed; 
 }
 
 
@@ -178,10 +179,10 @@ void ParticleSystem::collideWith(std::vector<SSphere> spheres)
         float len = particles[i].velocity.length();
         SVector3 dir = (particles[i].sphere.center) - spheres[j].center; 
         dir /= dir.length();
-        dir *= len;        
+        dir *= len * this->bounce;        
 
         particles[i].velocity = dir;
-        particles[i].sphere.center += (particles[i].velocity) * 0.05f;
+        particles[i].sphere.center += (particles[i].velocity) * this->size;
 
         break;
       }

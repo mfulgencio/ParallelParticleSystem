@@ -1,7 +1,6 @@
 #ifdef __APPLE__
 #include "GLUT/glut.h"
 #include <OPENGL/gl.h>
-#include <stdlib.h>
 #endif
 
 #ifdef __unix__
@@ -21,6 +20,8 @@
 #include "ParticleSystem.h"
 #include "GameObject.h"
 #include "Util/Vector.hpp"
+#include <stdlib.h>
+#include <string.h>
 
 
 /********************
@@ -135,7 +136,27 @@ void mouseMotion(int x, int y)
 }
 
 
-int main(int argc, char * argv[])
+const char* getModelName(int argc, char* argv[])
+{
+  for (int i = 0; i < argc - 1; i++)
+  {
+    if (strcmp(argv[i], "-model") == 0)
+      return argv[i + 1];
+  }
+  return "Models/bunny500.m";
+}
+
+float getFloat(int argc, char* argv[], const char* name, float def)
+{
+  for (int i = 0; i < argc - 1; i++)
+  {
+    if (strcmp(argv[i], name) == 0)
+      return strtof(argv[i + 1], NULL);
+  }
+  return def;
+}
+
+int main(int argc, char* argv[])
 {
 	glutInit(& argc, argv);
  	glutInitWindowPosition(100, 200);
@@ -158,8 +179,14 @@ int main(int argc, char * argv[])
  	Initialize();
   float size = 1.0;
 
-	player = new Player(new SVector3(0,0,0), NULL, size, "Models/gargoyle_2k.m");
-  psys = new ParticleSystem(SVector3(0,2,0), 0.5f, NULL, 0.05f);
+	player = new Player(new SVector3(0,0,0), NULL, size, getModelName(argc, argv));
+  psys = new ParticleSystem(SVector3(0,2,0), getFloat(argc, argv, "-random", 0.5f), NULL, 
+                            getFloat(argc, argv, "-size", 0.05f), getFloat(argc, argv, "-bounce", 0.8f), 
+                            getFloat(argc, argv, "-speed", 1));
+  if (getFloat(argc, argv, "-n", 0) != 0)
+  {
+    psys->setNumParticles((int)getFloat(argc, argv, "-n", 200));
+  } 
 	camera = new Camera(0, 0, -3, player);
   manager = new InputManager(player, camera, psys);
 	hud = new HUD();

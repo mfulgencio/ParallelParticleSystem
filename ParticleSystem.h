@@ -25,11 +25,11 @@ public:
    GLuint PositionBufferHandle, ColorBufferHandle, NormalBufferHandle;
    SVector3 Translation, Rotation, Scale;
    int TriangleCount;
-   float size, random;
+   float size, random, bounce, speed;
    int numParticles;
    Particle particles[MAX_PARTICLES];
 
-   ParticleSystem(SVector3 pos, float random, CMesh * mod, float size);
+   ParticleSystem(SVector3 pos, float random, CMesh * mod, float size, float bounce, float speed);
    ~ParticleSystem();
    void update(float dt);
    void draw();

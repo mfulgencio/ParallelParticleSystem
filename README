@@ -8,4 +8,4 @@ Based on CPE 476, Lab 1, Tim Adam & Nick Alereza
 
 compile: 'make'
 run: 'make run'
-  or './test'
+  or './run'
