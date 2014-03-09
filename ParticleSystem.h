@@ -8,6 +8,7 @@
 #include "CShader.h"
 #include "CMeshLoader.h"
 #include "Util/SSphere.h"
+#include "BVHNode.h"
 
 #endif
 
@@ -39,4 +40,5 @@ public:
    void resetParticles();
    void resetParticle(int i);
    void collideWith(std::vector<SSphere> spheres);
+   void collideWithBVH(BVHNode* head);
 };

@@ -21,3 +21,12 @@ command line args:
                      reflect off the model
 -model <string>	  which model to use (path to .m or .obj file)
 
+
+TODO
+Use triangles rather than spheres
+   -> change particle model to tetrahedron or triangle?
+Use BVH
+Parallelize collision detection
+   -> maybe also use the GPU to update the particle's location 
+      and perform the collision reaction with the player's spheres
+Make more efficient use of vertex buffers when drawing particles

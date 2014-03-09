@@ -13,22 +13,23 @@
 #include <stdlib.h>
 
 
-#define GRAVITY 0.12f
-#define YSPEED 0.20f
-#define SPEED 0.06f
+#define GRAVITY 0.32f
+#define YSPEED 0.90f
+#define SPEED 0.1f
+#define SIZESCALE 0.05f
 
 ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float size, float bounce, float speed) {
-  this->size = size;
+  this->size = size * SIZESCALE;
   this->bounce = bounce;
   this->speed = speed;
   this->random = random;
-  this->numParticles = 200;
+  this->numParticles = 1000;
 
   Translation = pos;
 
-  Scale.X = size; 
-  Scale.Y = size;
-  Scale.Z = size;
+  Scale.X = this->size; 
+  Scale.Y = this->size;
+  Scale.Z = this->size;
 
   Rotation.X = 0;
   Rotation.Y = 0;
@@ -50,13 +51,13 @@ ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float siz
 	shade->loadAttribute("aPosition");
 	shade->loadAttribute("aColor");
   shade->loadAttribute("aNormal");
-	
 	// Attempt to load mesh
-  mod = CMeshLoader::loadASCIIMesh("Models/bullet.obj"); /** TODO change this for the love of god **/
+  mod = CMeshLoader::loadASCIIMesh("Models/sphere.m"); /** TODO change this model for the love of god **/
 	if (! mod)
 	{
 		std::cerr << "Unable to load necessary mesh." << std::endl;
 	}
+
 	// Make out mesh fit within camera view
 	mod->resizeMesh(SVector3(1));
 	// And center it at the origin
@@ -110,8 +111,11 @@ void ParticleSystem::draw()
 		glPushMatrix();
 
 		glTranslatef(particles[i].sphere.center.X, particles[i].sphere.center.Y, particles[i].sphere.center.Z);
-		glRotatef(Rotation.X, 1, 0, 0);
-		glRotatef(Rotation.Y, 0, 1, 0);
+    if (1) // should they randomly rotate?
+    {
+		  glRotatef(i, 1, 0, 0);
+		  glRotatef((i * i * i), 0, 1, 0);
+    }
 		glScalef(Scale.X, Scale.Y, Scale.Z);
 
 		glDrawArrays(GL_TRIANGLES, 0, TriangleCount*3);
@@ -190,3 +194,20 @@ void ParticleSystem::collideWith(std::vector<SSphere> spheres)
   }
 }
 
+void ParticleSystem::collideWithBVH(BVHNode* head)
+{
+  for (int i = 0; i < numParticles; i++)
+  {
+    SSphere* hit = head->checkHit(particles[i].sphere);
+    if (hit != NULL)
+    {
+      float len = particles[i].velocity.length();
+      SVector3 dir = (particles[i].sphere.center) - hit->center; 
+      dir /= dir.length();
+      dir *= len * this->bounce;        
+
+      particles[i].velocity = dir;
+      particles[i].sphere.center += (particles[i].velocity) * this->size;
+    }
+  }
+}

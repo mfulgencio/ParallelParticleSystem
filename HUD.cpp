@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include "HUD.h"
+#include <string.h>
 
 HUD::HUD()
 { }
@@ -27,7 +28,30 @@ void HUD::renderBitmapString (float x, float y, float z, char *string)
   }
 }
 
-void HUD::drawText(int FPS, int curTime, int numParts)
+int av(int* arr, int len)
+{
+  float ret = 0;
+  for (int i = 0; i < len; i++) {
+     ret += arr[i];
+     if (arr[i] == -1) return 0; 
+  }
+  ret /= len;
+  return ret;
+}
+
+void HUD::drawFPS(int* FPSs, int num, const char* str, float x, float y)
+{
+	char fps[20];
+  for (int i = 0; i < 20; i++) fps[i] = 0;
+  strcpy(fps, str);
+  int FPS = av(FPSs, num);
+	fps[strlen(str)] = FPS/100 % 10 + 48;
+	fps[strlen(str) + 1] = FPS/10 % 10 + 48;
+	fps[strlen(str) + 2] = FPS/1 % 10 + 48;
+	renderBitmapString(x, y, -4.5, fps);
+}
+
+void HUD::drawText(int FPS, int curTime, int numParts, int* FPSs)
 {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -54,21 +78,25 @@ void HUD::drawText(int FPS, int curTime, int numParts)
 	timer[2] = (((int)curTime)/1000) % 10 + 48;
 	timer[3] ='s';
 	timer[4]='\0';
-	renderBitmapString(-0.2, 2.7, -4.5, timer);
+	renderBitmapString(-0.5, 2.7, -4.5, timer);
 
 	char fps[9] = "FPS: ";
 	fps[5] = FPS/100 % 10 + 48;
 	fps[6] = FPS/10 % 10 + 48;
 	fps[7] = FPS/1 % 10 + 48;
-	renderBitmapString(-0.45, 2.5, -4.5, fps);
+	renderBitmapString(-0.75, 2.5, -4.5, fps);
 
 	char parts[7] = "N: ";
 	parts[3] = numParts/1000 % 10 + 48;
 	parts[4] = numParts/100 % 10 + 48;
 	parts[5] = numParts/10 % 10 + 48;
 	parts[6] = numParts/1 % 10 + 48;
-	timer[7]='\0';
-	renderBitmapString(-0.45, 2.3, -4.5, parts);
+	parts[7]='\0';
+	renderBitmapString(-0.7, 2.3, -4.5, parts);
+
+  drawFPS(FPSs, 10, "FPS (10 sec): ", 0.7, 2.7);
+  drawFPS(FPSs, 30, "FPS (30 sec): ", 0.7, 2.5);
+  drawFPS(FPSs, 60, "FPS (60 sec): ", 0.7, 2.3);
 
 	glDisable(GL_LIGHT0);
    

@@ -19,6 +19,7 @@
 CMesh * const CMeshLoader::loadASCIIMesh(std::string const & fileName)
 {
   CMesh *Mesh = new CMesh();
+	std::cout << "Loading " << fileName << std::endl;
 
   if(std::string::npos == fileName.find(".m")) {
     MeshData *meshData = loadMesh(fileName, LOAD_NORMAL_FACE, 1.0);
@@ -141,7 +142,6 @@ CMesh * const CMeshLoader::loadASCIIMesh(std::string const & fileName)
       delete Mesh;
       return 0;
     }
-
     return Mesh;
   }
 }
