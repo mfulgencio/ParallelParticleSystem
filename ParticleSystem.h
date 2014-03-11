@@ -1,6 +1,10 @@
 #pragma once
 #include <typeinfo>
 #define MAX_PARTICLES 10000
+#define GRAVITY 0.32f
+#define YSPEED 0.90f
+#define SPEED 0.1f
+#define SIZESCALE 0.05f
 
 #ifndef BASICS
 #define BASICS
@@ -8,6 +12,7 @@
 #include "CShader.h"
 #include "CMeshLoader.h"
 #include "Util/SSphere.h"
+#include "BVHNode.h"
 
 #endif
 
@@ -38,5 +43,10 @@ public:
    void moveParticle(int ndx, float dt);
    void resetParticles();
    void resetParticle(int i);
+   int checkTriangle(SVector3 A, SVector3 B, SVector3 C, SVector3 center, float radius, SVector3 vel);
    void collideWith(std::vector<SSphere> spheres);
+   void collideWithBVH(BVHNode* head);
 };
+
+
+extern "C" void cudaUpdate(ParticleSystem *psys, float time);

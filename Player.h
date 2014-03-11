@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include "BVHNode.h"
 
 #include <typeinfo>
 
@@ -25,6 +26,7 @@ public:
    SVector3 Translation, Rotation, Scale;
    int TriangleCount;
    std::vector<SSphere> hitspheres;
+   BVHNode *head;
 
    Player(SVector3* pos, CMesh * mod, float size, const char* name);
    ~Player();
@@ -35,4 +37,5 @@ public:
    SVector3* getPosition();
    SVector3* getTranslation();
    SVector3* getVelocity();
+   BVHNode* constructBVH(int startNdx, int endNdx);
 };

@@ -22,6 +22,7 @@
 #include "Util/Vector.hpp"
 #include <stdlib.h>
 #include <string.h>
+//#include <cuda.h>
 
 
 /********************
@@ -38,8 +39,12 @@ int Time0, Time1;
 int prevX, prevY;
 int w = 0, a = 0, s = 0, d = 0;
 
+int useBVH = 1;
+int useParallelization = 0;
+
 int curTime = 0;
 int numFrames = 0, lastSecond = 0, FPS = 0;
+int FPSs[60];
 time_t *timeTracker;
 
 Camera *camera;
@@ -69,10 +74,25 @@ void Initialize()
 void update(float dtime)
 {
   player->update(dtime);
-  psys->update(dtime);
-  psys->collideWith(player->hitspheres);
+  if(useParallelization)
+     cudaUpdate(psys, dtime);
+  else
+     psys->update(dtime);
+  if (useBVH)
+    psys->collideWithBVH(player->head);
+  else 
+    psys->collideWith(player->hitspheres);
   manager->update();
   camera->update();
+}
+
+void updateFPS()
+{
+  for (int i = 59; i > 0; i--)
+  {
+     FPSs[i] = FPSs[i - 1];
+  }
+  FPSs[0] = FPS;
 }
    
 // Manages time independent movement and draws the VBO
@@ -93,6 +113,8 @@ void Display()
 	  lastSecond++;
 	  FPS = numFrames;
 	  numFrames = 0;
+
+    updateFPS();
 	}
 	time(timeTracker);
   
@@ -103,7 +125,7 @@ void Display()
   camera->setLookAt();
   player->draw();
   psys->draw();
-  hud->drawText(FPS, curTime, psys->getNumParticles());
+  hud->drawText(FPS, curTime, psys->getNumParticles(), FPSs);
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -143,7 +165,8 @@ const char* getModelName(int argc, char* argv[])
     if (strcmp(argv[i], "-model") == 0)
       return argv[i + 1];
   }
-  return "Models/gargoyle_2k.m";
+
+  return "Models/bunny500.m";
 }
 
 float getFloat(int argc, char* argv[], const char* name, float def)
@@ -180,20 +203,37 @@ int main(int argc, char* argv[])
   float size = 1.0;
 
 	player = new Player(new SVector3(0,0,0), NULL, size, getModelName(argc, argv));
-  psys = new ParticleSystem(SVector3(0,2,0), getFloat(argc, argv, "-random", 0.5f), NULL, 
-                            getFloat(argc, argv, "-size", 0.05f), getFloat(argc, argv, "-bounce", 0.8f), 
-                            getFloat(argc, argv, "-speed", 1));
+   psys = new ParticleSystem(SVector3(0,2,0), getFloat(argc, argv, "-random", 0.5f), NULL, 
+
+                            getFloat(argc, argv, "-size", 1.0f), getFloat(argc, argv, "-bounce", 0.8f), 
+                            getFloat(argc, argv, "-speed", 1.0f));
   if (getFloat(argc, argv, "-n", 0) != 0)
   {
-    psys->setNumParticles((int)getFloat(argc, argv, "-n", 200));
+    psys->setNumParticles((int)getFloat(argc, argv, "-n", 1000));
   } 
+  for (int i = 0; i < argc; i++)
+  {
+    if (strcmp(argv[i], "-noBVH") == 0)
+    {
+      useBVH = 0; // disable BVH
+    }
+    
+    if (strcmp(argv[i], "-p") == 0)
+    {
+      useParallelization = 1;
+    }
+  }  
+
 	camera = new Camera(0, 0, -3, player);
   manager = new InputManager(player, camera, psys);
 	hud = new HUD();
 
+  for (int i = 0; i < 60; i++) FPSs[i] = -1;
+
   manager->sendPlayerPositionPulse();  
    
   printf("Opening Window\n"); 
+  printf(useBVH? "Using BVH Collision\n" : "Using Naive Collision\n");
 
 	glutKeyboardFunc(keyCallback);
 	glutKeyboardUpFunc(keyUpCallback);

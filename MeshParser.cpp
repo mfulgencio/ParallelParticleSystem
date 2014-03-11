@@ -32,6 +32,7 @@ MeshData* loadMesh(const string fileName, LOAD_NORMAL_TYPE type, float scale) {
    ifstream infile(fileName.c_str());
    vec3 *v;
    vec2 *t;
+
    if (infile.is_open())  
    {
       while (!infile.eof())
@@ -75,7 +76,7 @@ MeshData* loadMesh(const string fileName, LOAD_NORMAL_TYPE type, float scale) {
                tangents.push_back(v);
             }
          }
-         else if (!(start = line.find("vt "))) // we found a vertex
+         else if (!(start = line.find("vt "))) // we found a texture
          {
             t = parseTexture(line);
             textures.push_back(t);
@@ -154,6 +155,7 @@ MeshData* loadMesh(const string fileName, LOAD_NORMAL_TYPE type, float scale) {
       delete *v2;
    }
    
+
    return meshData;
 }
 

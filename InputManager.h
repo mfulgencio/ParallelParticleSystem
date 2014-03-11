@@ -7,8 +7,8 @@ class InputManager{
 public:
 float SENSITIVITY;
 
-int w, a, s, d, o, p, dx, dy, prevX, prevY;
-float AbsX, AbsY;
+int w, a, s, d, o, p, r, f, dx, dy, prevX, prevY;
+float AbsX, AbsY, radius, theta;
 Player* player;
 Camera* camera;
 ParticleSystem* psys;
