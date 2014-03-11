@@ -143,7 +143,7 @@ const char* getModelName(int argc, char* argv[])
     if (strcmp(argv[i], "-model") == 0)
       return argv[i + 1];
   }
-  return "Models/bunny500.m";
+  return "Models/gargoyle_2k.m";
 }
 
 float getFloat(int argc, char* argv[], const char* name, float def)
