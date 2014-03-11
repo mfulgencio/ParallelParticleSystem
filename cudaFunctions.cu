@@ -103,4 +103,43 @@ extern "C" void cudaUpdate(ParticleSystem *psys, float time) {
 
 
 
+__device__ int checkTriangle(SVector3 A, SVector3 B, SVector3 C, SVector3 center, float radius, SVector3 vel)
+{
+  SVector3 normal = ((A - C).crossProduct(A - B));
+  normal /= normal.length();
+
+  SVector3 dirA = (A - (center - (normal * -radius)));
+  SVector3 dirB = (A - (center + (normal * -radius)));
+
+  float dot1 = dirA.dotProduct(normal);
+  float dot2 = dirB.dotProduct(normal);
+
+  if (dot1 > 0 && dot2 > 0 || dot1 < 0 && dot2 < 0)
+    return 0;
+  return 1;
+}
+
+__global__ void collideWithBVH_kernel(Particle *particles, int num_p, BVHNode* head)
+{
+  /*Particle part = particles[blockIdx.x * blockDim.x + threadIdx.x];
+  SSphere* hit = head->checkHit(part.sphere);
+  if (hit != NULL && !hit->isEmpty() && checkTriangle(hit->A, hit->B, hit->C, particles[i].sphere.center, particles[i].sphere.radius, particles[i].velocity))
+  {
+    float len = particles[i].velocity.length();
+    SVector3 dir = (particles[i].sphere.center) - hit->center; 
+    dir /= dir.length();
+    dir *= len * this->bounce;        
+
+    particles[i].velocity = dir;
+    particles[i].sphere.center += (particles[i].velocity) * this->size;
+  }*/
+}
+
+extern "C" void CUDAcollideWithBVH(ParticleSystem *psys, BVHNode* head)
+{
+  /*for (int i = 0; i < numParticles; i++)
+  {
+    
+  }*/
+}
 
