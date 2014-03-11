@@ -65,7 +65,7 @@ public:
       return 1;
    }
 
-   int isEmpty()
+   CUDA_CALLABLE_MEMBER int isEmpty()
    {
       if (A.X == 0 && B.X == 0 && C.X == 0 &&
           A.Y == 0 && B.Y == 0 && C.Y == 0 && 

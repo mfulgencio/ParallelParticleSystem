@@ -1,6 +1,14 @@
 #pragma once
 #include "Util/SSphere.h"
 
+#define CUDABVHSIZE 4000
+
+typedef struct
+{
+   SSphere hsphere;
+   int lIndex, rIndex;
+} CUDA_BVH; 
+
 
 class BVHNode
 {
@@ -54,6 +62,23 @@ public:
             ret = right->checkHit(tocheck);
          }
          return ret;
+      }
+   }
+   // fills the bvh into an array (recursively - returns the next available index)
+   int createCudaBVH(CUDA_BVH *tofill, int index)
+   {
+      tofill[index].hsphere = this->hitsphere;
+      if (left == NULL && right == NULL)
+      {
+         tofill[index].lIndex = -1;
+         tofill[index].rIndex = -1;
+         return index + 1;
+      }
+      else
+      {
+         tofill[index].lIndex = index + 1;
+         tofill[index].rIndex = this->left->createCudaBVH(tofill, index + 1);
+         return this->right->createCudaBVH(tofill, tofill[index].rIndex);
       }
    }
 };

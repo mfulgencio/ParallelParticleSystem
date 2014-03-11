@@ -12,6 +12,7 @@
 
 #endif
 
+
 class Player : GameObject
 {
 public:
@@ -27,6 +28,7 @@ public:
    int TriangleCount;
    std::vector<SSphere> hitspheres;
    BVHNode *head;
+   CUDA_BVH bvh[CUDABVHSIZE];
 
    Player(SVector3* pos, CMesh * mod, float size, const char* name);
    ~Player();

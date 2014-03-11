@@ -78,10 +78,18 @@ void update(float dtime)
      cudaUpdate(psys, dtime);
   else
      psys->update(dtime);
-  if (useBVH)
-    psys->collideWithBVH(player->head);
-  else 
-    psys->collideWith(player->hitspheres);
+  if (!useParallelization)
+  {
+    if (useBVH)
+      psys->collideWithBVH(player->head);
+    else 
+      psys->collideWith(player->hitspheres);
+  }
+  else
+  {
+    // if (useBVH)
+    CUDAcollideWithBVH(psys, player->bvh);
+  }
   manager->update();
   camera->update();
 }

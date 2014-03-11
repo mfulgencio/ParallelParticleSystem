@@ -128,6 +128,7 @@ Player::Player(SVector3* pos, CMesh* mod, float size, const char* name)
   printf("Creating BVH\n");
   //selectionSort(&(this->hitspheres));
   this->head = constructBVH(0, this->hitspheres.size() - 1);
+  this->head->createCudaBVH(this->bvh, 0);
 
 	// Now load our mesh into a VBO, retrieving the number of triangles and the handles to each VBO
 	CMeshLoader::createVertexBufferObject(* mod, TriangleCount, 
