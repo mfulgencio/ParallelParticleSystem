@@ -11,6 +11,7 @@
 #include "Player.h"
 #include "Camera.h"
 #include <stdio.h>
+#include <math.h>
 
 InputManager::InputManager(Player* pl, Camera* c, ParticleSystem *psys)
 {
@@ -25,8 +26,10 @@ InputManager::InputManager(Player* pl, Camera* c, ParticleSystem *psys)
    prevX = 0;
    prevY = 0;
    glutWarpPointer(500, 300);
+   radius = 3.5f;
+   theta = 0;
 
-   a = d = s = w = o = p = 0;
+   a = d = s = w = o = p = r = f = 0;
 }
 
 InputManager::~InputManager(){
@@ -40,7 +43,8 @@ void InputManager::keyCallBack(unsigned char key, int x, int y) {
    if (key == 'd') d = 1;
    if (key == 'o') o = 1;
    if (key == 'p') p = 1;
-
+   if (key == 'r') r = 1;
+   if (key == 'f') f = 1;
    
 }
 
@@ -54,16 +58,24 @@ void InputManager::keyUpCallBack(unsigned char key, int x, int y) {
    if (key == 'd') d = 0;
    if (key == 'o') o = 0;
    if (key == 'p') p = 0;
+   if (key == 'r') r = 0;
+   if (key == 'f') f = 0;
 
 }
 
 void InputManager::update()
 {
-   float speed = 0.1f;
-   if (a) this->camera->Position.X += speed;
-   if (d) this->camera->Position.X -= speed;
+   float speed = 0.05f;
+   if (a) theta += speed;
+   if (d) theta -= speed;
+   this->camera->Position.X = cos(theta) * radius; 
+   this->camera->Position.Z = sin(theta) * radius; 
    if (w) this->camera->Position.Y += speed;
    if (s) this->camera->Position.Y -= speed;
+   if (r) radius -= speed;
+   if (f) radius += speed;
+
+   if (radius < 2) radius = 2;
 
    if (o) this->psys->setNumParticles(this->psys->getNumParticles() + 10);
    if (p) this->psys->setNumParticles(this->psys->getNumParticles() - 10);

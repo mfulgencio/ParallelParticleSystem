@@ -126,7 +126,7 @@ Player::Player(SVector3* pos, CMesh* mod, float size, const char* name)
 
   this->hitspheres = mod->gimmeSpheres();
   printf("Creating BVH\n");
-  selectionSort(&(this->hitspheres));
+  //selectionSort(&(this->hitspheres));
   this->head = constructBVH(0, this->hitspheres.size() - 1);
 
 	// Now load our mesh into a VBO, retrieving the number of triangles and the handles to each VBO
@@ -188,6 +188,7 @@ void Player::draw()
 		glTranslatef(Translation.X, Translation.Y, Translation.Z);
 		glRotatef(Rotation.X, 1, 0, 0);
 		glRotatef(Rotation.Y, 0, 1, 0);
+		//glRotatef(Rotation.Z, 0, 0, 1);
 		glScalef(Scale.X, Scale.Y, Scale.Z);
 
 		glDrawArrays(GL_TRIANGLES, 0, TriangleCount*3);

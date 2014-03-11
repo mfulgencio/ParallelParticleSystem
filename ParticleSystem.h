@@ -39,6 +39,7 @@ public:
    void moveParticle(int ndx, float dt);
    void resetParticles();
    void resetParticle(int i);
+   int checkTriangle(SVector3 A, SVector3 B, SVector3 C, SVector3 center, float radius, SVector3 vel);
    void collideWith(std::vector<SSphere> spheres);
    void collideWithBVH(BVHNode* head);
 };

@@ -15,11 +15,19 @@ SSphere::SSphere()
   center.Y = 0;
   center.Z = 0;
   radius = -999;
+
+  this->A = SVector3();
+  this->B = SVector3();
+  this->C = SVector3();
 }
 SSphere::SSphere(SVector3 c, float r)
 {
   center = c;
   radius = r;
+
+  this->A = SVector3();
+  this->B = SVector3();
+  this->C = SVector3();
 }
 
 SSphere::SSphere(SVector3 A, SVector3 B, SVector3 C)
@@ -29,6 +37,10 @@ SSphere::SSphere(SVector3 A, SVector3 B, SVector3 C)
   center.Y = (A.Y + B.Y + C.Y) / 3.0f;
   center.Z = (A.Z + B.Z + C.Z) / 3.0f;
   radius = ((C - A).length()) / 1.8f;
+
+  this->A = A;
+  this->B = B;
+  this->C = C;
 }
 
 SSphere::~SSphere() { }
@@ -40,3 +52,13 @@ int SSphere::collidesWith(SSphere other)
    return 1;
 }
 
+int SSphere::isEmpty()
+{
+   if (A.X == 0 && B.X == 0 && C.X == 0 &&
+       A.Y == 0 && B.Y == 0 && C.Y == 0 && 
+       A.Z == 0 && B.Z == 0 && C.Z == 0)
+   {
+      return 1;
+   } 
+   return 0;
+}

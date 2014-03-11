@@ -52,7 +52,7 @@ ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float siz
 	shade->loadAttribute("aColor");
   shade->loadAttribute("aNormal");
 	// Attempt to load mesh
-  mod = CMeshLoader::loadASCIIMesh("Models/sphere.m"); /** TODO change this model for the love of god **/
+  mod = CMeshLoader::loadASCIIMesh("Models/sphere.m"); 
 	if (! mod)
 	{
 		std::cerr << "Unable to load necessary mesh." << std::endl;
@@ -169,7 +169,25 @@ void ParticleSystem::resetParticle(int i)
   particles[i].velocity.X = rbFloat() * SPEED;
   particles[i].velocity.Y = -rFloat() * YSPEED;
   particles[i].velocity.Z = rbFloat() * SPEED;
-  
+}
+
+
+int ParticleSystem::checkTriangle(SVector3 A, SVector3 B, SVector3 C, SVector3 center, float radius, SVector3 vel)
+{
+  //return 1;
+
+  SVector3 normal = ((A - C).crossProduct(A - B));
+  normal /= normal.length();
+
+  SVector3 dirA = (A - (center - (normal * -radius)));
+  SVector3 dirB = (A - (center + (normal * -radius)));
+
+  float dot1 = dirA.dotProduct(normal);
+  float dot2 = dirB.dotProduct(normal);
+
+  if (dot1 > 0 && dot2 > 0 || dot1 < 0 && dot2 < 0)
+    return 0;
+  return 1;
 }
 
 void ParticleSystem::collideWith(std::vector<SSphere> spheres)
@@ -178,7 +196,8 @@ void ParticleSystem::collideWith(std::vector<SSphere> spheres)
   {
     for (int j = 0; j < spheres.size(); j++)
     {
-      if (spheres[j].collidesWith(particles[i].sphere))
+      if (spheres[j].collidesWith(particles[i].sphere) && 
+          checkTriangle(spheres[j].A, spheres[j].B, spheres[j].C, particles[i].sphere.center, particles[i].sphere.radius, particles[i].velocity))
       {
         float len = particles[i].velocity.length();
         SVector3 dir = (particles[i].sphere.center) - spheres[j].center; 
@@ -199,7 +218,7 @@ void ParticleSystem::collideWithBVH(BVHNode* head)
   for (int i = 0; i < numParticles; i++)
   {
     SSphere* hit = head->checkHit(particles[i].sphere);
-    if (hit != NULL)
+    if (hit != NULL && !hit->isEmpty() && checkTriangle(hit->A, hit->B, hit->C, particles[i].sphere.center, particles[i].sphere.radius, particles[i].velocity))
     {
       float len = particles[i].velocity.length();
       SVector3 dir = (particles[i].sphere.center) - hit->center; 
