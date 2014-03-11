@@ -32,8 +32,6 @@ Camera::~Camera(){
 	
 }
 
-
-
 void Camera::update()
 {
    /** position is updated from InputManager **/
@@ -46,7 +44,7 @@ void Camera::setLookAt()
 {
    gluLookAt(
       Position.X, Position.Y + 1, Position.Z, 
-      Position.X + Direction.X, Position.Y + 1 + Direction.Y, Position.Z + Direction.Z, 
+      0, 0, 0, 
       0, 1, 0);
 }
 

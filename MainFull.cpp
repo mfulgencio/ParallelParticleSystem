@@ -173,6 +173,7 @@ const char* getModelName(int argc, char* argv[])
     if (strcmp(argv[i], "-model") == 0)
       return argv[i + 1];
   }
+
   return "Models/bunny500.m";
 }
 
@@ -185,7 +186,6 @@ float getFloat(int argc, char* argv[], const char* name, float def)
   }
   return def;
 }
-
 
 int main(int argc, char* argv[])
 {
@@ -211,7 +211,8 @@ int main(int argc, char* argv[])
   float size = 1.0;
 
 	player = new Player(new SVector3(0,0,0), NULL, size, getModelName(argc, argv));
-  psys = new ParticleSystem(SVector3(0,2,0), getFloat(argc, argv, "-random", 0.5f), NULL, 
+   psys = new ParticleSystem(SVector3(0,2,0), getFloat(argc, argv, "-random", 0.5f), NULL, 
+
                             getFloat(argc, argv, "-size", 1.0f), getFloat(argc, argv, "-bounce", 0.8f), 
                             getFloat(argc, argv, "-speed", 1.0f));
   if (getFloat(argc, argv, "-n", 0) != 0)

@@ -66,6 +66,20 @@ void InputManager::keyUpCallBack(unsigned char key, int x, int y) {
 void InputManager::update()
 {
    float speed = 0.05f;
+   if (a) {
+      this->camera->Position.X += speed;
+  //    this->camera->Position.Y += speed;
+   }
+   if (d) {
+      this->camera->Position.X -= speed;
+    //  this->camera->Position.Y -= speed;
+   }
+   if (w) {
+      this->camera->Position.Y += speed;
+   }
+   if (s) {
+      this->camera->Position.Y -= speed;
+   }
    if (a) theta += speed;
    if (d) theta -= speed;
    this->camera->Position.X = cos(theta) * radius; 
