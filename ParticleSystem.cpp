@@ -13,11 +13,6 @@
 #include <stdlib.h>
 
 
-#define GRAVITY 0.32f
-#define YSPEED 0.90f
-#define SPEED 0.1f
-#define SIZESCALE 0.05f
-
 ParticleSystem::ParticleSystem(SVector3 pos, float random, CMesh* mod, float size, float bounce, float speed) {
   this->size = size * SIZESCALE;
   this->bounce = bounce;

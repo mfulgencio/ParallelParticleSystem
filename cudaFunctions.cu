@@ -10,6 +10,8 @@
 #include <cuda_runtime.h>
 #include <math.h>
 #include "ParticleSystem.h"
+#include "Util/SVector3.h"
+#include "Util/SSphere.h"
 
 #define THREADS_PER_BLOCK 32
 
@@ -21,12 +23,34 @@
 typedef struct {
    Particle particles[MAX_PARTICLES];
    int numParticles;
+   float speed;
    SVector3 Translation;
 } CudaParticleSystem;
 
 
+__device__ void moveParticle(Particle particle, float speed, float time) {
+   particle.velocity.Y -= GRAVITY * time;
+
+   particle.sphere.center.X += particle.velocity.X * time * speed; 
+   particle.sphere.center.Y += particle.velocity.Y * time * speed; 
+   particle.sphere.center.Z += particle.velocity.Z * time * speed; 
+}
+
+
+__device__ void resetParticle(Particle particle, float time) {
+
+}
+
+
 __global__ void update(CudaParticleSystem *cpsys, float time) {
+   int index = (blockIdx.x * blockDim.x) + threadIdx.x;
+   Particle curParticle = cpsys->particles[index];
    
+   moveParticle(curParticle, cpsys->speed, time);
+   
+   if(curParticle.sphere.center.Y < -2) {
+      resetParticle(curParticle, time);
+   }
 }
 
 
@@ -39,6 +63,7 @@ extern "C" void cudaUpdate(ParticleSystem *psys, float time) {
    
    memcpy(cpsys_host->particles, psys->particles, sizeof(Particle) * MAX_PARTICLES);
    cpsys_host->numParticles = psys->numParticles;
+   cpsys_host->speed = psys->speed;
    memcpy((void *)&cpsys_host->Translation, (void *)&psys->Translation, sizeof(SVector3));
    
    num_blocks = ceil(MAX_PARTICLES / THREADS_PER_BLOCK);

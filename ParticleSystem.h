@@ -1,6 +1,10 @@
 #pragma once
 #include <typeinfo>
 #define MAX_PARTICLES 10000
+#define GRAVITY 0.32f
+#define YSPEED 0.90f
+#define SPEED 0.1f
+#define SIZESCALE 0.05f
 
 #ifndef BASICS
 #define BASICS

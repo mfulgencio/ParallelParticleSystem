@@ -8,7 +8,7 @@
 
 #include "SSphere.h"
 
-SSphere::SSphere()
+CUDA_CALLABLE_MEMBER SSphere::SSphere()
 {
   center = SVector3();
   center.X = 0;
@@ -20,7 +20,7 @@ SSphere::SSphere()
   this->B = SVector3();
   this->C = SVector3();
 }
-SSphere::SSphere(SVector3 c, float r)
+CUDA_CALLABLE_MEMBER SSphere::SSphere(SVector3 c, float r)
 {
   center = c;
   radius = r;
@@ -30,7 +30,7 @@ SSphere::SSphere(SVector3 c, float r)
   this->C = SVector3();
 }
 
-SSphere::SSphere(SVector3 A, SVector3 B, SVector3 C)
+CUDA_CALLABLE_MEMBER SSphere::SSphere(SVector3 A, SVector3 B, SVector3 C)
 {
   center = SVector3();
   center.X = (A.X + B.X + C.X) / 3.0f;
@@ -43,9 +43,9 @@ SSphere::SSphere(SVector3 A, SVector3 B, SVector3 C)
   this->C = C;
 }
 
-SSphere::~SSphere() { }
+CUDA_CALLABLE_MEMBER SSphere::~SSphere() { }
 
-int SSphere::collidesWith(SSphere other)
+CUDA_CALLABLE_MEMBER int SSphere::collidesWith(SSphere other)
 {
    if ((this->center - other.center).length() > this->radius + other.radius)
       return 0;
