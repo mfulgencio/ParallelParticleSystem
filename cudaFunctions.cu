@@ -109,9 +109,20 @@ __global__ void collideWithBVH_kernel(Particle *particles, int num_p, BVHNode* h
 
 extern "C" void CUDAcollideWithBVH(ParticleSystem *psys, BVHNode* head)
 {
-  /*for (int i = 0; i < numParticles; i++)
-  {
-    
-  }*/
+  // step 1: copy the BVH into a CUDA-compatible structure
+
+   // step 2: copy the particles into a CUDA-compatible format
+   CudaParticleSystem *cpsys_host, *cpsys_device;
+   
+   cudaMalloc((void**)&cpsys_host, sizeof(CudaParticleSystem));
+   
+   memcpy(cpsys_host->particles, psys->particles, sizeof(Particle) * MAX_PARTICLES);
+   cpsys_host->numParticles = psys->numParticles;
+   cpsys_host->speed = psys->speed;
+   memcpy((void *)&cpsys_host->Translation, (void *)&psys->Translation, sizeof(SVector3));
+   cudaMemcpy(cpsys_host, cpsys_device, sizeof(CudaParticleSystem), cudaMemcpyHostToDevice);
+ 
+  // step 3: call the kernel
+
 }
 

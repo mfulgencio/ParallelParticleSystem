@@ -1,6 +1,7 @@
 #pragma once
 #include "Util/SSphere.h"
 
+
 class BVHNode
 {
 public:
@@ -12,19 +13,19 @@ public:
    ~BVHNode();
    SSphere* checkHit(SSphere tocheck);*/
 
-   CUDA_CALLABLE_MEMBER BVHNode (SSphere end)
+   BVHNode (SSphere end)
    {
       this->hitsphere = end;
       left = NULL;
       right = NULL;
    }
-   CUDA_CALLABLE_MEMBER float max (float f1, float f2)
+   float max (float f1, float f2)
    {
       if (f1 > f2) return f1;
       else return f2;
    }
 
-   CUDA_CALLABLE_MEMBER BVHNode (BVHNode *l, BVHNode *r)
+   BVHNode (BVHNode *l, BVHNode *r)
    {
       this->hitsphere = SSphere((l->hitsphere.center + r->hitsphere.center) / 2, 
                             (l->hitsphere.center - r->hitsphere.center).length() + 
@@ -32,11 +33,11 @@ public:
       left = l;
       right = r;
    }
-   CUDA_CALLABLE_MEMBER ~BVHNode()
+   ~BVHNode()
    {
 
    }
-    SSphere* checkHit(SSphere tocheck)
+   SSphere* checkHit(SSphere tocheck)
    {
       if (!this->hitsphere.collidesWith(tocheck))
       {
@@ -56,3 +57,4 @@ public:
       }
    }
 };
+
