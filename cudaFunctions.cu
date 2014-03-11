@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
+#include <curand_kernel.h>
 #include <math.h>
 #include "ParticleSystem.h"
 #include "Util/SVector3.h"
@@ -24,8 +25,24 @@ typedef struct {
    Particle particles[MAX_PARTICLES];
    int numParticles;
    float speed;
+   float random;
    SVector3 Translation;
 } CudaParticleSystem;
+
+
+__device__ float rFloat(curandState *randStates)  {
+   int id = (blockIdx.x * blockDim.x) + threadIdx.x;
+   curandState localState = randStates[id];
+   float randNum = (float)curand_uniform(&localState);
+   randStates[id] = localState;
+   
+   return randNum;
+}
+
+
+__device__ float rbFloat(curandState *randStates) {
+   return rFloat(randStates) * 2 - 1;
+}
 
 
 __device__ void moveParticle(Particle particle, float speed, float time) {
@@ -37,40 +54,51 @@ __device__ void moveParticle(Particle particle, float speed, float time) {
 }
 
 
-__device__ void resetParticle(Particle particle, float time) {
-
+__device__ void resetParticle(curandState *randStates, Particle particle, SVector3 Translation, float random, float time) {
+   particle.sphere.center.X = Translation.X + rbFloat(randStates) * random;
+   particle.sphere.center.Y = Translation.Y + rbFloat(randStates) * random;
+   particle.sphere.center.Z = Translation.Z + rbFloat(randStates) * random;
+   
+   particle.velocity.X = rbFloat(randStates) * SPEED;
+   particle.velocity.Y = -rFloat(randStates) * YSPEED;
+   particle.velocity.Z = rbFloat(randStates) * SPEED;
 }
 
 
-__global__ void update(CudaParticleSystem *cpsys, float time) {
+__global__ void update(curandState *randStates, CudaParticleSystem *cpsys, float time) {
    int index = (blockIdx.x * blockDim.x) + threadIdx.x;
    Particle curParticle = cpsys->particles[index];
    
    moveParticle(curParticle, cpsys->speed, time);
    
    if(curParticle.sphere.center.Y < -2) {
-      resetParticle(curParticle, time);
+      curand_init(1234, index, 0, &randStates[index]);
+      resetParticle(randStates, curParticle, cpsys->Translation, cpsys->random, time);
    }
 }
 
 
 extern "C" void cudaUpdate(ParticleSystem *psys, float time) {
    int num_blocks = 0;
+   curandState *randStates;
 
-   CudaParticleSystem *cpsys_host, *cpsys_device;
+   CudaParticleSystem *cpsys_device;
    
-   cudaMalloc((void**)&cpsys_host, sizeof(CudaParticleSystem));
+   cudaMalloc((void **)&cpsys_device, sizeof(CudaParticleSystem));
+   cudaMalloc((void **)&randStates, MAX_PARTICLES * sizeof(curandState));
    
-   memcpy(cpsys_host->particles, psys->particles, sizeof(Particle) * MAX_PARTICLES);
-   cpsys_host->numParticles = psys->numParticles;
-   cpsys_host->speed = psys->speed;
-   memcpy((void *)&cpsys_host->Translation, (void *)&psys->Translation, sizeof(SVector3));
+   cudaMemcpy(cpsys_device->particles, psys->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyHostToDevice);
+   cudaMemcpy(&cpsys_device->numParticles, &psys->numParticles, sizeof(int), cudaMemcpyHostToDevice);
+   cudaMemcpy(&cpsys_device->speed, &psys->speed, sizeof(float), cudaMemcpyHostToDevice);
+   cudaMemcpy(&cpsys_device->random, &psys->random, sizeof(float), cudaMemcpyHostToDevice);
+   cudaMemcpy(&cpsys_device->Translation, &psys->Translation, sizeof(SVector3), cudaMemcpyHostToDevice);
    
    num_blocks = ceil(MAX_PARTICLES / THREADS_PER_BLOCK);
    
-   cudaMemcpy(cpsys_host, cpsys_device, sizeof(CudaParticleSystem), cudaMemcpyHostToDevice);
+   update<<<THREADS_PER_BLOCK, num_blocks>>>(randStates, cpsys_device, time);
    
-   update<<<THREADS_PER_BLOCK, num_blocks>>>(cpsys_device, time);
+   
+   cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyDeviceToHost);
 }
 
 
