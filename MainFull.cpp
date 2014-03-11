@@ -22,6 +22,7 @@
 #include "Util/Vector.hpp"
 #include <stdlib.h>
 #include <string.h>
+//#include <cuda.h>
 
 
 /********************
@@ -39,6 +40,7 @@ int prevX, prevY;
 int w = 0, a = 0, s = 0, d = 0;
 
 int useBVH = 1;
+int useParallelization = 0;
 
 int curTime = 0;
 int numFrames = 0, lastSecond = 0, FPS = 0;
@@ -72,7 +74,10 @@ void Initialize()
 void update(float dtime)
 {
   player->update(dtime);
-  psys->update(dtime);
+  if(useParallelization)
+     cudaUpdate(psys, dtime);
+  else
+     psys->update(dtime);
   if (useBVH)
     psys->collideWithBVH(player->head);
   else 
@@ -173,6 +178,7 @@ float getFloat(int argc, char* argv[], const char* name, float def)
   return def;
 }
 
+
 int main(int argc, char* argv[])
 {
 	glutInit(& argc, argv);
@@ -209,6 +215,11 @@ int main(int argc, char* argv[])
     if (strcmp(argv[i], "-noBVH") == 0)
     {
       useBVH = 0; // disable BVH
+    }
+    
+    if (strcmp(argv[i], "-p") == 0)
+    {
+      useParallelization = 1;
     }
   }  
 

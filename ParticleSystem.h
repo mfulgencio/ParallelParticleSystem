@@ -43,3 +43,6 @@ public:
    void collideWith(std::vector<SSphere> spheres);
    void collideWithBVH(BVHNode* head);
 };
+
+
+extern "C" void cudaUpdate(ParticleSystem *psys, float time);
