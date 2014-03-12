@@ -41,7 +41,7 @@ __device__ float rbFloat(curandState *randStates) {
 }
 
 
-__device__ void moveParticle(Particle* particle, float speed, float time) {
+__device__ void moveParticle(Particle *particle, float speed, float time) {
    particle->velocity.Y -= GRAVITY * time;
 
    particle->sphere.center.X += particle->velocity.X * time * speed; 
@@ -50,7 +50,7 @@ __device__ void moveParticle(Particle* particle, float speed, float time) {
 }
 
 
-__device__ void resetParticle(curandState *randStates, Particle* particle, SVector3 Translation, float random, float time) {
+__device__ void resetParticle(curandState *randStates, Particle *particle, SVector3 Translation, float random, float time) {
    particle->sphere.center.X = Translation.X + rbFloat(randStates) * random;
    particle->sphere.center.Y = Translation.Y + rbFloat(randStates) * random;
    particle->sphere.center.Z = Translation.Z + rbFloat(randStates) * random;
@@ -65,7 +65,9 @@ __global__ void update(curandState *randStates, CudaParticleSystem *cpsys, float
    int index = (blockIdx.x * blockDim.x) + threadIdx.x;
    Particle curParticle = cpsys->particles[index];
    
-   printf("CudaParticleSystem data: %d, %d, %f, %f, %f, %f, %f\n", index, cpsys->numParticles, cpsys->speed, cpsys->random, cpsys->Translation.X, cpsys->Translation.Y, cpsys->Translation.Z);
+   //printf("CudaParticleSystem data: %d, %d, %f, %f, %f, %f, %f\n", index, cpsys->numParticles, cpsys->speed, cpsys->random, cpsys->Translation.X, cpsys->Translation.Y, cpsys->Translation.Z);
+   //if(index == 0)
+      //printf("Old Device Particle #%d: %f, %f, %f\n", index, curParticle.sphere.center.X, curParticle.sphere.center.Y, curParticle.sphere.center.Z);
    
    moveParticle(&curParticle, cpsys->speed, time);
    
@@ -73,6 +75,11 @@ __global__ void update(curandState *randStates, CudaParticleSystem *cpsys, float
       curand_init(1234, index, 0, &randStates[index]);
       resetParticle(randStates, &curParticle, cpsys->Translation, cpsys->random, time);
    }
+   
+   //if(index == 0)
+      //printf("New Device Particle #%d: %f, %f, %f\n", index, curParticle.sphere.center.X, curParticle.sphere.center.Y, curParticle.sphere.center.Z);
+      
+   cpsys->particles[index] = curParticle;
 }
 
 
@@ -91,11 +98,19 @@ extern "C" void cudaUpdate(ParticleSystem *psys, float time) {
    cudaMemcpy(&cpsys_device->random, &psys->random, sizeof(float), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->Translation, &psys->Translation, sizeof(SVector3), cudaMemcpyHostToDevice);
    
+   /*int i;
+   for(i = 0; i < psys->numParticles; i++) {
+      printf("Host Particle #%d: %f, %f, %f\n", i, psys->particles[i].sphere.center.X, psys->particles[i].sphere.center.Y, psys->particles[i].sphere.center.Z);
+   }*/
+   
    num_blocks = psys->numParticles / THREADS_PER_BLOCK + 1;
    
    update<<<THREADS_PER_BLOCK, num_blocks>>>(randStates, cpsys_device, time);
    
+   //int i = 0;
+   //printf("Old Host Particle #%d: %f, %f, %f\n", i, psys->particles[i].sphere.center.X, psys->particles[i].sphere.center.Y, psys->particles[i].sphere.center.Z);
    cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * psys->numParticles, cudaMemcpyDeviceToHost);
+   //printf("New Host Particle #%d: %f, %f, %f\n", i, psys->particles[i].sphere.center.X, psys->particles[i].sphere.center.Y, psys->particles[i].sphere.center.Z);
    
    cudaFree(cpsys_device);
    cudaFree(randStates);
@@ -158,6 +173,8 @@ __global__ void collideWithBVH_kernel(CudaParticleSystem *cpsys, int num_p, CUDA
     part.velocity = dir;
     part.sphere.center += (part.velocity) * size;
   }
+  
+  cpsys->particles[blockIdx.x * blockDim.x + threadIdx.x] = part;
 }
 
 extern "C" void CUDAcollideWithBVH(ParticleSystem *psys, CUDA_BVH* bvh)
@@ -170,16 +187,16 @@ extern "C" void CUDAcollideWithBVH(ParticleSystem *psys, CUDA_BVH* bvh)
    cudaMalloc((void **)&cuda_bvh, CUDABVHSIZE * sizeof(CUDA_BVH));
    
    cudaMemcpy(cuda_bvh, bvh, CUDABVHSIZE * sizeof(CUDA_BVH), cudaMemcpyHostToDevice);
-   cudaMemcpy(cpsys_device->particles, psys->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyHostToDevice);
+   cudaMemcpy(cpsys_device->particles, psys->particles, sizeof(Particle) * psys->numParticles, cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->numParticles, &psys->numParticles, sizeof(int), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->speed, &psys->speed, sizeof(float), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->random, &psys->random, sizeof(float), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->Translation, &psys->Translation, sizeof(SVector3), cudaMemcpyHostToDevice);
  
    // step 2: call the kernel
-   int num_blocks = ceil(MAX_PARTICLES / THREADS_PER_BLOCK);
+   int num_blocks = psys->numParticles / THREADS_PER_BLOCK + 1;
    collideWithBVH_kernel<<<THREADS_PER_BLOCK, num_blocks>>>(cpsys_device, psys->numParticles, cuda_bvh, psys->bounce, psys->size);
-   cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyDeviceToHost);
+   cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * psys->numParticles, cudaMemcpyDeviceToHost);
    
    cudaFree(cpsys_device);
    cudaFree(cuda_bvh);
