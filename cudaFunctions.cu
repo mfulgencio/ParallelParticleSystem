@@ -16,11 +16,6 @@
 #include "BVHNode.h"
 
 #define THREADS_PER_BLOCK 32
-
-// Variables needed for moveParticle(): ParticleSystem.particles[], ParticleSystem.speed,
-   // particle index, float "time" variable, GRAVITY constant
-// Variables needed for resetParticle(): ParticleSystem.particles[], particle index,
-   // SVector3 translation, rbFloat() & rFloat(), SPEED & YSPEED constants
    
 typedef struct {
    Particle particles[MAX_PARTICLES];
