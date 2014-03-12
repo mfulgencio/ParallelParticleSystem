@@ -212,7 +212,6 @@ int main(int argc, char* argv[])
 
 	player = new Player(new SVector3(0,0,0), NULL, size, getModelName(argc, argv));
    psys = new ParticleSystem(SVector3(0,2,0), getFloat(argc, argv, "-random", 0.5f), NULL, 
-
                             getFloat(argc, argv, "-size", 1.0f), getFloat(argc, argv, "-bounce", 0.8f), 
                             getFloat(argc, argv, "-speed", 1.0f));
   if (getFloat(argc, argv, "-n", 0) != 0)
