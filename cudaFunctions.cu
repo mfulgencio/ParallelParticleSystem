@@ -98,7 +98,6 @@ extern "C" void cudaUpdate(ParticleSystem *psys, float time) {
    
    update<<<THREADS_PER_BLOCK, num_blocks>>>(randStates, cpsys_device, time);
    
-   
    cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyDeviceToHost);
 }
 
