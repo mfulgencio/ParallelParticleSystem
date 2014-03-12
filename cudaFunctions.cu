@@ -65,6 +65,8 @@ __global__ void update(curandState *randStates, CudaParticleSystem *cpsys, float
    int index = (blockIdx.x * blockDim.x) + threadIdx.x;
    Particle curParticle = cpsys->particles[index];
    
+   printf("CudaParticleSystem data: %d, %d, %f, %f, %f, %f, %f\n", index, cpsys->numParticles, cpsys->speed, cpsys->random, cpsys->Translation.X, cpsys->Translation.Y, cpsys->Translation.Z);
+   
    moveParticle(&curParticle, cpsys->speed, time);
    
    if(curParticle.sphere.center.Y < -2) {
@@ -81,20 +83,22 @@ extern "C" void cudaUpdate(ParticleSystem *psys, float time) {
    CudaParticleSystem *cpsys_device;
    
    cudaMalloc((void **)&cpsys_device, sizeof(CudaParticleSystem));
-   cudaMalloc((void **)&randStates, MAX_PARTICLES * sizeof(curandState));
+   cudaMalloc((void **)&randStates, psys->numParticles * sizeof(curandState));
    
-   cudaMemcpy(cpsys_device->particles, psys->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyHostToDevice);
+   cudaMemcpy(cpsys_device->particles, psys->particles, sizeof(Particle) * psys->numParticles, cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->numParticles, &psys->numParticles, sizeof(int), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->speed, &psys->speed, sizeof(float), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->random, &psys->random, sizeof(float), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->Translation, &psys->Translation, sizeof(SVector3), cudaMemcpyHostToDevice);
    
-   num_blocks = ceil(MAX_PARTICLES / THREADS_PER_BLOCK);
+   num_blocks = psys->numParticles / THREADS_PER_BLOCK + 1;
    
    update<<<THREADS_PER_BLOCK, num_blocks>>>(randStates, cpsys_device, time);
    
+   cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * psys->numParticles, cudaMemcpyDeviceToHost);
    
-   cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyDeviceToHost);
+   cudaFree(cpsys_device);
+   cudaFree(randStates);
 }
 
 
@@ -176,5 +180,8 @@ extern "C" void CUDAcollideWithBVH(ParticleSystem *psys, CUDA_BVH* bvh)
    int num_blocks = ceil(MAX_PARTICLES / THREADS_PER_BLOCK);
    collideWithBVH_kernel<<<THREADS_PER_BLOCK, num_blocks>>>(cpsys_device, psys->numParticles, cuda_bvh, psys->bounce, psys->size);
    cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyDeviceToHost);
+   
+   cudaFree(cpsys_device);
+   cudaFree(cuda_bvh);
 }
 
