@@ -16,6 +16,11 @@
 #include "BVHNode.h"
 
 #define THREADS_PER_BLOCK 32
+
+// Variables needed for moveParticle(): ParticleSystem.particles[], ParticleSystem.speed,
+   // particle index, float "time" variable, GRAVITY constant
+// Variables needed for resetParticle(): ParticleSystem.particles[], particle index,
+   // SVector3 translation, rbFloat() & rFloat(), SPEED & YSPEED constants
    
 typedef struct {
    Particle particles[MAX_PARTICLES];
@@ -178,3 +183,41 @@ extern "C" void CUDAcollideWithBVH(ParticleSystem *psys, CUDA_BVH* bvh)
    cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyDeviceToHost);
 }
 
+__global__ void collideWith_kernel(CudaParticleSystem *cpsys, std::vector<SSphere> spheres) {
+  Particle part = cpsys->particles[blockIdx.x * blockDim.x + threadIdx.x];
+
+  for (int j = 0; j < spheres.size(); j++)
+  {
+    if (spheres[j].collidesWith(particles[i].sphere) && 
+        checkTriangle(spheres[j].A, spheres[j].B, spheres[j].C, particles[i].sphere.center, particles[i].sphere.radius, particles[i].velocity))
+    {
+      float len = particles[i].velocity.length();
+      SVector3 dir = (particles[i].sphere.center) - spheres[j].center; 
+      dir /= dir.length();
+      dir *= len * this->bounce;        
+
+      particles[i].velocity = dir;
+      particles[i].sphere.center += (particles[i].velocity) * this->size;
+
+      break;
+    }
+  }
+}
+
+extern "C" void CUDAcollideWith(CudaParticleSystem *psys, std::vector<SSphere> spheres) {
+	// step 1: copy the particles into a CUDA-compatible format
+   CudaParticleSystem *cpsys_device;
+   
+   cudaMalloc((void **)&cpsys_device, sizeof(CudaParticleSystem));
+   
+   cudaMemcpy(cpsys_device->particles, psys->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyHostToDevice);
+   cudaMemcpy(&cpsys_device->numParticles, &psys->numParticles, sizeof(int), cudaMemcpyHostToDevice);
+   cudaMemcpy(&cpsys_device->speed, &psys->speed, sizeof(float), cudaMemcpyHostToDevice);
+   cudaMemcpy(&cpsys_device->random, &psys->random, sizeof(float), cudaMemcpyHostToDevice);
+   cudaMemcpy(&cpsys_device->Translation, &psys->Translation, sizeof(SVector3), cudaMemcpyHostToDevice);
+ 
+   // step 2: call the kernel
+   int num_blocks = ceil(MAX_PARTICLES / THREADS_PER_BLOCK);
+   collideWith_kernel<<<THREADS_PER_BLOCK, num_blocks>>>(cpsys_device, psys->numParticles, cuda_bvh, psys->bounce, psys->size);
+   cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyDeviceToHost);
+}
