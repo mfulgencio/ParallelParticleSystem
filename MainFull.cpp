@@ -87,8 +87,10 @@ void update(float dtime)
   }
   else
   {
-    // if (useBVH)
-    CUDAcollideWithBVH(psys, player->bvh);
+    if (useBVH)
+      CUDAcollideWithBVH(psys, player->bvh);
+    else
+      CUDAcollideWith(psys, player->hitspheres);
   }
   manager->update();
   camera->update();

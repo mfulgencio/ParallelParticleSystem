@@ -216,19 +216,24 @@ __global__ void collideWith_kernel(CudaParticleSystem *cpsys, SSphere* spheres, 
 }
 
 extern "C" void CUDAcollideWith(ParticleSystem *psys, std::vector<SSphere> spheres) {
-	// step 1: copy the particles into a CUDA-compatible format
    CudaParticleSystem *cpsys_device;
+   SSphere *cu_spheres;
    
    cudaMalloc((void **)&cpsys_device, sizeof(CudaParticleSystem));
+   cudaMalloc((void **)&cu_spheres, sizeof(SSphere) * spheres.size());
    
-   cudaMemcpy(cpsys_device->particles, psys->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyHostToDevice);
+   cudaMemcpy(cpsys_device->particles, psys->particles, sizeof(Particle) * psys->numParticles, cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->numParticles, &psys->numParticles, sizeof(int), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->speed, &psys->speed, sizeof(float), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->random, &psys->random, sizeof(float), cudaMemcpyHostToDevice);
    cudaMemcpy(&cpsys_device->Translation, &psys->Translation, sizeof(SVector3), cudaMemcpyHostToDevice);
+   cudaMemcpy(cu_spheres, &spheres[0], sizeof(SSphere) * spheres.size(), cudaMemcpyHostToDevice);
+   
  
-   // step 2: call the kernel
-   int num_blocks = ceil(MAX_PARTICLES / THREADS_PER_BLOCK);
-   collideWith_kernel<<<THREADS_PER_BLOCK, num_blocks>>>(cpsys_device, &spheres[0], spheres.size(), psys->bounce, psys->size);
-   cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * MAX_PARTICLES, cudaMemcpyDeviceToHost);
+   int num_blocks = psys->numParticles / THREADS_PER_BLOCK + 1;
+   collideWith_kernel<<<THREADS_PER_BLOCK, num_blocks>>>(cpsys_device, cu_spheres, spheres.size(), psys->bounce, psys->size);
+   cudaMemcpy(psys->particles, cpsys_device->particles, sizeof(Particle) * psys->numParticles, cudaMemcpyDeviceToHost);
+
+   cudaFree(cpsys_device);
+   cudaFree(cu_spheres);
 }

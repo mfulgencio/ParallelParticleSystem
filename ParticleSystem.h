@@ -51,3 +51,4 @@ public:
 
 extern "C" void cudaUpdate(ParticleSystem *psys, float time);
 extern "C" void CUDAcollideWithBVH(ParticleSystem *psys, CUDA_BVH* head);
+extern "C" void CUDAcollideWith(ParticleSystem *psys, std::vector<SSphere> spheres);
